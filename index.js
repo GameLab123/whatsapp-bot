@@ -1,8 +1,8 @@
-const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
-const readline = require('readline');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { Boom } = require('@hapi/boom');
+const http = require('http');
 
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
+const PHONE_NUMBER = "4917618720127"; // HIER DEINE NUMMER MIT 49 OHNE +
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth');
@@ -13,13 +13,30 @@ async function startBot() {
     });
 
     if (!sock.authState.creds.registered) {
-        const phoneNumber = await question('Gib deine Nummer mit Ländercode ein, z.B. 49123456789: ');
-        const code = await sock.requestPairingCode(phoneNumber.trim());
-        console.log(`\nDein Pairing Code: ${code}\n`);
-        rl.close();
+        console.log("Noch nicht verbunden. Fordere Pairing Code an...");
+        const code = await sock.requestPairingCode(PHONE_NUMBER);
+        console.log(`\n\nDEIN PAIRING CODE: ${code}\n\n`);
+        console.log("Geh in WhatsApp → 3 Punkte → Verknüpfte Geräte → Gerät hinzufügen → Mit Telefonnummer verknüpfen");
     }
 
     sock.ev.on('creds.update', saveCreds);
+
+    sock.ev.on('connection.update', (update) => {
+        const { connection, lastDisconnect } = update;
+
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect.error instanceof Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+            console.log('Verbindung getrennt:', lastDisconnect.error?.message);
+            if (shouldReconnect) {
+                startBot();
+            }
+        }
+
+        if (connection === 'open') {
+            console.log('✅ Bot erfolgreich verbunden!');
+        }
+    });
 }
 
+http.createServer((req, res) => res.end('Bot läuft')).listen(process.env.PORT || 3000);
 startBot();
