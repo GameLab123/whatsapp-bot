@@ -12,7 +12,7 @@ async function startBot() {
         connectTimeoutMs: 60000,
         qrTimeout: 60000,
         defaultQueryTimeoutMs: 60000,
-        keepAliveIntervalMs: 30000, // hält Verbindung aktiv
+        keepAliveIntervalMs: 30000,
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -61,7 +61,6 @@ async function startBot() {
     });
 }
 
-// hält Render wach
 http.createServer((req, res) => res.end('Bot läuft')).listen(process.env.PORT || 3000);
 
 startBot();
