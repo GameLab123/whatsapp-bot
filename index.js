@@ -4,7 +4,7 @@ const http = require('http');
 // Dummy Server damit Railway nicht killt
 http.createServer((req, res) => res.end('WhatsApp Bot läuft')).listen(process.env.PORT || 3000);
 
-const PHONE_NUMBER = "4917XXXXXXX"; // Deine Nummer mit 49 ohne +
+const PHONE_NUMBER = "4917618720127"; // Deine Nummer mit 49 ohne +
 
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('auth');
