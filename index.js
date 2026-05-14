@@ -7,3 +7,4 @@ http.createServer((req, res) => {
     console.log(`Server läuft auf Port ${PORT}`);
     console.log(`\n\nDEIN PAIRING CODE: TEST1234\n`);
 });
+
