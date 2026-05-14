@@ -1,4 +1,4 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+onst { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const http = require('http');
 const readline = require('readline');
@@ -13,12 +13,10 @@ async function startBot() {
         auth: state,
         browser: ['Chrome', 'Linux', ''],
         connectTimeoutMs: 60000,
-        qrTimeout: 60000,
         defaultQueryTimeoutMs: 60000,
         keepAliveIntervalMs: 30000,
     });
 
-    // Wenn nicht eingeloggt, Pairing Code anfordern
     if (!sock.authState.creds.registered) {
         const phoneNumber = await question('Gib deine Nummer mit Ländercode ein, z.B. 49123456789: ');
         const code = await sock.requestPairingCode(phoneNumber.trim());
@@ -28,24 +26,6 @@ async function startBot() {
     }
 
     sock.ev.on('creds.update', saveCreds);
-
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-        const msg = messages[0];
-        if (!msg.message || msg.key.fromMe) return;
-
-        const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
-        if (!text) return;
-
-        const lowerText = text.toLowerCase();
-
-        if (lowerText === 'hallo') {
-            await sock.sendMessage(msg.key.remoteJid, { text: 'Moin! Bot läuft 🚀' });
-        }
-
-        if (lowerText === 'ping') {
-            await sock.sendMessage(msg.key.remoteJid, { text: 'pong' });
-        }
-    });
 
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect } = update;
@@ -63,7 +43,3 @@ async function startBot() {
         }
     });
 }
-
-http.createServer((req, res) => res.end('Bot läuft')).listen(process.env.PORT || 3000);
-
-startBot();
